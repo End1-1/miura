@@ -1,14 +1,15 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
 import 'package:cafe5_shop_mobile_client/models/lists.dart';
 import 'package:cafe5_shop_mobile_client/models/model.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_event.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_state.dart';
+import 'package:cafe5_shop_mobile_client/screens/base/screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/drivers_list/driver_list_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/goods_list/goods_list_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/order/order_decor.dart';
 import 'package:cafe5_shop_mobile_client/screens/order/order_popup.dart';
 import 'package:cafe5_shop_mobile_client/screens/partner_screen/partner_screen.dart';
-import 'package:cafe5_shop_mobile_client/screens/screen/app_scaffold.dart';
 import 'package:cafe5_shop_mobile_client/utils/data_types.dart';
 import 'package:cafe5_shop_mobile_client/utils/dialogs.dart';
 import 'package:cafe5_shop_mobile_client/utils/mtext_editing_controller.dart';
@@ -18,15 +19,12 @@ import 'package:cafe5_shop_mobile_client/widgets/dialogs.dart';
 import 'package:cafe5_shop_mobile_client/widgets/scrolls.dart';
 import 'package:cafe5_shop_mobile_client/widgets/square_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../bloc/screen_bloc.dart';
-import 'order_model.dart';
+part 'order_model.dart';
 
-class OrderScreen extends StatelessWidget {
+class OrderScreen extends MiuraApp {
   final OrderModel model = OrderModel();
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   OrderScreen(
       {super.key, required pricePolitic, Partner? partner, String? orderId}) {
@@ -36,76 +34,37 @@ class OrderScreen extends StatelessWidget {
       model.partner = partner;
       model.pricePolitic = partner.pricepolitic;
     }
+    if (model.orderId.isNotEmpty){
+      model.openOrder();
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider<ScreenBloc>(
-        create: (_) => ScreenBloc(SSInit())
-          ..add(model.orderId.isEmpty
-              ? SEIdle()
-              : SEHttpQuery(
-                  query:
-                      HttpQuery(hqOpenOrder, initData: {'id': model.orderId}))),
-        child: BlocListener<ScreenBloc, ScreenState>(
-            listener: (context, state) {
-          if (state is SSError) {
-            appDialog(context, state.error).then((value) {
-              Navigator.pop(context);
-            });
-          }
-        }, child:
-                BlocBuilder<ScreenBloc, ScreenState>(builder: (context, state) {
-          if (state is SSData) {
-            Map<String, dynamic> data = state.data;
-            model.partner = Partner.fromJson(data['partner']);
-            model.pricePolitic = model.partner.pricepolitic;
-            model.paymentType = data['order']['paymenttype'];
-            model.editComment.text = data['order']['comment'];
-            for (var e in data['goods']) {
-              model.goods.add(Goods.fromJson(e));
-            }
-            if (model.goods.isNotEmpty) {
-              model.storage = model.goods.first.storage!;
-            }
-            model.partnerController.add(model.partner);
-            model.goodsController.add(model.goods);
-            model.inputDataChanged(null, -1);
-          }
-          _checkDelivery();
-          return WillPopScope(
-              onWillPop: () async => false,
-              child: AppScaffold(
-                  key: scaffoldKey,
-                  title: 'Order',
-                  showBackButton: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      StreamBuilder<Partner>(
-                          stream: model.partnerController.stream,
-                          builder: (context, snapshot) {
-                            return Wrap(runSpacing: 10, children: [
-                              _rowStorePayment(context),
-                              for (var e in _rowPartner(context)) ...[e],
-                              _rowDeliveryDate(context)
-                            ]);
-                          }),
-                      const SizedBox(height: 20),
-                      _rowGoodsList(context),
-                      StreamBuilder<List<dynamic>?>(
-                          stream: model.completeDeliveryScreen.stream,
-                          builder: (context, snapshot) {
-                            return _rowCompleteDelivery(context, snapshot.data);
-                          }),
-                      StreamBuilder(
-                          stream: model.totalController.stream,
-                          builder: (context, snapshot) {
-                            return _rowBottom(context);
-                          })
-                    ],
-                  )));
-        })));
+  Widget body(BuildContext context) {
+    return  Column(
+        crossAxisAlignment: CrossAxisAlignment.start, children: [
+      StreamBuilder<Partner>(
+          stream: model.partnerController.stream,
+          builder: (context, snapshot) {
+            return Wrap(runSpacing: 10, children: [
+              _rowStorePayment(context),
+              for (var e in _rowPartner(context)) ...[e],
+              _rowDeliveryDate(context)
+            ]);
+          }),
+      const SizedBox(height: 20),
+      _rowGoodsList(context),
+      StreamBuilder<List<dynamic>?>(
+          stream: model.completeDeliveryScreen.stream,
+          builder: (context, snapshot) {
+            return _rowCompleteDelivery(context, snapshot.data);
+          }),
+      StreamBuilder(
+          stream: model.totalController.stream,
+          builder: (context, snapshot) {
+            return _rowBottom(context);
+          })
+    ]);
   }
 
   Widget _rowStorePayment(BuildContext context) {
@@ -134,19 +93,6 @@ class OrderScreen extends StatelessWidget {
         }, 'assets/images/menu.png', height: 50)
       ],
     );
-  }
-
-  Future<void> _checkDelivery() async {
-    Map<String, dynamic> mp = {};
-    HttpQuery(hqRoute, initData: {
-      pkDate: DateFormat('dd/MM/yyyy').format(DateTime.now()),
-      pkDriver: prefs.getInt(pkDriver),
-      pkPartner: model.partner.id,
-    }).request(mp).then((value) {
-      if (value == hrOk) {
-        model.completeDeliveryScreen.add(mp[pkData]);
-      }
-    });
   }
 
   Widget _rowDeliveryDate(BuildContext context) {
@@ -406,15 +352,14 @@ class OrderScreen extends StatelessWidget {
         model.goodsController.add(model.goods);
         model.inputDataChanged(null, -1);
       }
-      Map<String, Object?> httpData = {};
       model.debtController.add(-1);
-      HttpQuery(hqDebts, initData: {'partner': model.partner.id})
-          .request(httpData)
+      HttpQuery(route: 'hqdebts.php', data: {'partner': model.partner.id})
+          .request()
           .then((value) {
-        if (value == hrOk) {
-          if ((httpData[pkData]! as List<dynamic>).isNotEmpty) {
+        if (value['ok'] == hrOk) {
+          if ((value[pkData]! as List<dynamic>).isNotEmpty) {
             model.debtController.add(double.tryParse(
-                    (httpData[pkData]! as List<dynamic>)[0]['amount']
+                    (value[pkData]! as List<dynamic>)[0]['amount']
                         .toString()) ??
                 0);
           } else {
@@ -460,12 +405,12 @@ class OrderScreen extends StatelessWidget {
                       'partner': model.partner.id,
                       'action': 1
                     };
-                    HttpQuery(hqVisit).request(response).then((value) {
-                      if (value == hrOk) {
-                        Navigator.pop(scaffoldKey.currentContext!);
+                    HttpQuery(route: 'hqvisit.php', data:{}).request().then((value) {
+                      if (value['ok'] == hrOk) {
+                        Navigator.pop(prefs.context());
                       } else {
                         appDialog(
-                            scaffoldKey.currentContext!, response['message']);
+                            prefs.context(), response['message']);
                       }
                     });
                   }),
@@ -480,12 +425,12 @@ class OrderScreen extends StatelessWidget {
                       'partner': model.partner.id,
                       'action': 3
                     };
-                    HttpQuery(hqVisit).request(response).then((value) {
-                      if (value == hrOk) {
-                        Navigator.pop(scaffoldKey.currentContext!);
+                    HttpQuery(route: 'hqvisit.php', data:{}).request().then((value) {
+                      if (value['ok'] == hrOk) {
+                        Navigator.pop(prefs.context());
                       } else {
                         appDialog(
-                            scaffoldKey.currentContext!, response['message']);
+                            prefs.context(), response['message']);
                       }
                     });
                   }),
@@ -529,11 +474,11 @@ class OrderScreen extends StatelessWidget {
                         'id': d!["deliveryid"]!
                       };
                       model.completeDeliveryScreen.add(null);
-                      HttpQuery(hqCompleteDelivery)
-                          .request(response)
+                      HttpQuery(route: 'hqcompletedelivery.php', data: {})
+                          .request()
                           .then((value) {
-                        if (value == hrOk) {
-                      _checkDelivery();
+                        if (value['ok'] == hrOk) {
+                      model.checkDelivery();
                         } else {
                           appDialog(context, response[pkData]);
                         }
@@ -546,6 +491,21 @@ class OrderScreen extends StatelessWidget {
                   child: Text(tr('Delivery'),
                       style: const TextStyle(fontSize: 18)))))
     ]);
+  }
+
+  @override
+  bool canPop() {
+    return false;
+  }
+
+  @override
+  bool showBackButton() {
+    return false;
+  }
+
+  @override
+  String appTitle() {
+    return locale().order;
   }
 }
 

@@ -1,49 +1,30 @@
 import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
 import 'package:cafe5_shop_mobile_client/models/model.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_bloc.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_state.dart';
+import 'package:cafe5_shop_mobile_client/screens/base/screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/drivers_list/driver_list_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/preorder_detail/preorder_details_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/preorders/preorders_model.dart';
-import 'package:cafe5_shop_mobile_client/screens/screen/app_scaffold.dart';
 import 'package:cafe5_shop_mobile_client/utils/dialogs.dart';
 import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
 import 'package:cafe5_shop_mobile_client/utils/translator.dart';
-import 'package:cafe5_shop_mobile_client/widgets/loading.dart';
 import 'package:cafe5_shop_mobile_client/widgets/square_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-class PreordersScreen extends StatelessWidget {
+class PreordersScreen extends MiuraApp {
   final model = PreordersModel();
-  final _scaffoldKey = GlobalKey();
 
   PreordersScreen({super.key, required int state}) {
     model.state = state;
+    model.refresh(prefs.getInt(pkSaleDriver) ?? 0);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider<ScreenBloc>(
-        create: (_) => ScreenBloc(SSInProgress())
-          ..add(model.query(prefs.getInt(pkSaleDriver) ?? 0)),
-        child: AppScaffold(
-            key: _scaffoldKey,
-            title: model.state == 1 ? 'Pending preorders' : 'Preorders',
-            headerWidgets: _headerWidget(context),
-            child: BlocListener<ScreenBloc, ScreenState>(listener:
-                (context, state) {
-              if (state is SSError) {
-                appDialog(context, state.error).then((value) {
-                  Navigator.pop(context);
-                });
-              }
-            }, child:
-                BlocBuilder<ScreenBloc, ScreenState>(builder: (context, state) {
-              if (state is SSInProgress) {
-                return Loading(tr('Loading...'));
-              } else if (state is SSData) {
+  Widget body(BuildContext context) {
+    return
+                BlocBuilder<HttpBloc, HttpState>(builder: (context, state) {
+
                 model.data.clear();
                 for (var e in state.data[pkData]) {
                   model.data.add(Preorder.fromJson(e));
@@ -74,20 +55,14 @@ class PreordersScreen extends StatelessWidget {
                                     appDialogQuestion(
                                         context, tr('Is delivery complete?'),
                                         () {
-                                      Map<String, dynamic> response = {
-                                        'id': e.id
-                                      };
-                                      HttpQuery(hqCompleteDelivery)
-                                          .request(response)
+
+                                      HttpQuery(route:'hqcompletedelivery.php', data: {'id': e.id})
+                                          .request()
                                           .then((value) {
-                                        if (value == hrOk) {
-                                          BlocProvider.of<ScreenBloc>(
-                                                  _scaffoldKey.currentContext!)
-                                              .add(model.query(
-                                                  prefs.getInt(pkSaleDriver) ??
-                                                      0));
+                                        if (value['ok'] == hrOk) {
+                                          model.refresh(prefs.getInt(pkSaleDriver) ?? 0);
                                         } else {
-                                          appDialog(context, response[pkData]);
+                                          appDialog(prefs.context(), value[pkData]);
                                         }
                                       });
                                     }, null);
@@ -118,16 +93,16 @@ class PreordersScreen extends StatelessWidget {
                       ],
                     )));
               }
-              return Container();
-            }))));
+
+            );
   }
 
-  List<Widget> _headerWidget(BuildContext context) {
+  @override
+  List<Widget> headerWidget(BuildContext context) {
     return [
       squareImageButton(() {
         model.previousDate();
-        BlocProvider.of<ScreenBloc>(_scaffoldKey.currentContext!)
-            .add(model.query(prefs.getInt(pkSaleDriver) ?? 0));
+        model.refresh(prefs.getInt(pkSaleDriver) ?? 0);
       }, 'assets/images/left.png'),
       StreamBuilder<String>(
           stream: model.dateStream.stream,
@@ -137,22 +112,25 @@ class PreordersScreen extends StatelessWidget {
           }),
       squareImageButton(() {
         model.nextDate();
-        BlocProvider.of<ScreenBloc>(_scaffoldKey.currentContext!)
-            .add(model.query(prefs.getInt(pkSaleDriver) ?? 0));
+        model.refresh(prefs.getInt(pkSaleDriver) ?? 0);
       }, 'assets/images/right.png'),
       squareImageButton(() {
         showDialog(
-            context: _scaffoldKey.currentContext!,
+            context: prefs.context(),
             builder: (context) {
               return const SimpleDialog(children: [DriverListScreen()]);
             }).then((value) {
           if (value != null) {
             prefs.setInt(pkSaleDriver, value);
-            BlocProvider.of<ScreenBloc>(_scaffoldKey.currentContext!)
-                .add(model.query(prefs.getInt(pkSaleDriver) ?? 0));
+            model.refresh(prefs.getInt(pkSaleDriver) ?? 0);
           }
         });
       }, 'assets/images/filter.png')
     ];
+  }
+
+  @override
+  String appTitle() {
+    return  model.state == 1 ? locale().pendingPreorders : locale().preorders;
   }
 }

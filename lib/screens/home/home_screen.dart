@@ -1,11 +1,12 @@
 import 'package:cafe5_shop_mobile_client/models/model.dart';
-import 'package:cafe5_shop_mobile_client/sales_history/screen.dart';
+import 'package:cafe5_shop_mobile_client/screens/base/screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/data_download/data_download_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/login/login_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/order/order_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/preorders/preorders_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/preorders_stock/preorder_stock_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/route/route_screen.dart';
+import 'package:cafe5_shop_mobile_client/screens/sales_history/screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/screen/app_scaffold.dart';
 import 'package:cafe5_shop_mobile_client/screens/stock/stock_screen.dart';
 import 'package:cafe5_shop_mobile_client/utils/dialogs.dart';
@@ -14,13 +15,12 @@ import 'package:cafe5_shop_mobile_client/utils/translator.dart';
 import 'package:cafe5_shop_mobile_client/widgets/rect_button.dart';
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends MiuraApp {
+  const HomeScreen({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return AppScaffold(
-        title: 'Home',
-        showBackButton: false,
-        child: Column(
+  Widget body(BuildContext context) {
+    return  Column(
           children: [
             Expanded(
                 child: Wrap(
@@ -102,7 +102,7 @@ class HomeScreen extends StatelessWidget {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const DataDownloadScreen(
+                                builder: (context) => DataDownloadScreen(
                                       pop: true,
                                     )));
                       }, null);
@@ -126,6 +126,16 @@ class HomeScreen extends StatelessWidget {
             )),
             Row(children:[Expanded(child: Text(prefs.getString(pkAppVersion)!, textAlign: TextAlign.center))]),
           ],
-        ));
+        );
+  }
+
+  @override
+  bool showBackButton() {
+    return false;
+  }
+
+  @override
+  String appTitle() {
+    return locale().home;
   }
 }

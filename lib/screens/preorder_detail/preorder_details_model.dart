@@ -18,4 +18,6 @@ class PreorderDetails with _$PreorderDetails {
 
 class PreordersDetailsModel {
   final List<PreorderDetails> data = [];
+
+
 }

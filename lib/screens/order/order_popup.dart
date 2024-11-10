@@ -30,7 +30,7 @@ extension popup on OrderScreen {
           onTap: () async {
             Navigator.pop(context);
             showDialog(
-              context: scaffoldKey.currentContext!,
+              context: prefs.context(),
               builder: (BuildContext context) {
                 return SimpleDialog(
                   children: [
@@ -82,7 +82,7 @@ extension popup on OrderScreen {
           onTap: () {
             Navigator.pop(context);
             if (model.partner.id == 0) {
-              appDialog(scaffoldKey.currentContext!, tr('Select partner'));
+              appDialog(prefs.context(), tr('Select partner'));
               return;
             }
             visitScreen(context);
@@ -96,7 +96,7 @@ extension popup on OrderScreen {
           onTap: () async {
             Navigator.pop(context);
             showDialog(
-                context: scaffoldKey.currentContext!,
+                context: prefs.context(),
                 builder: (context) {
                   return SimpleDialog(
                     children: [
@@ -144,18 +144,16 @@ extension popup on OrderScreen {
               }
             }
             if (err.isNotEmpty) {
-              appDialog(scaffoldKey.currentContext!, err);
+              appDialog(prefs.context(), err);
               return;
             }
 
-            appDialogQuestion(scaffoldKey.currentContext!,
+            appDialogQuestion(prefs.context(),
                 tr('Confirm to save order and quit'), () async {
-              BuildContext dialogContext = scaffoldKey.currentContext!;
               showDialog(
-                context: scaffoldKey.currentContext!,
+                context: prefs.context(),
                 barrierDismissible: false,
                 builder: (BuildContext context) {
-                  dialogContext = context;
                   return Dialog(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -169,18 +167,18 @@ extension popup on OrderScreen {
               );
 
               Map<String, Object?> requiestMap = model.toMap();
-              int r = await HttpQuery(hqSaveOrder).request(requiestMap);
-              Navigator.pop(dialogContext);
-              switch (r) {
+              final data = await HttpQuery(route: 'hqsaveorder.php', data:{}).request();
+              Navigator.pop(prefs.context());
+              switch (data['ok']) {
                 case hrFail:
-                  appDialog(scaffoldKey.currentContext!,
+                  appDialog(prefs.context(),
                       requiestMap['message'].toString());
                   return;
                 case hrOk:
-                  Navigator.of(scaffoldKey.currentContext!).pop();
+                  Navigator.of(prefs.context()).pop();
                   break;
                 case hrNetworkError:
-                  appDialog(scaffoldKey.currentContext!,
+                  appDialog(prefs.context(),
                       requiestMap['message'].toString());
                   return;
               }
@@ -207,7 +205,7 @@ extension popup on OrderScreen {
             Navigator.pop(context);
             appDialogQuestion(context, tr('Confirm to quit without saving'),
                 () {
-              Navigator.pop(scaffoldKey.currentContext!);
+              Navigator.pop(prefs.context());
             }, null);
           })
     ];

@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:cafe5_shop_mobile_client/local_notification_service.dart';
+import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
 import 'package:cafe5_shop_mobile_client/screens/register_device/server_list.dart';
 import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -23,11 +25,15 @@ Future<void> main() async {
     String buildNumber = packageInfo.buildNumber;
     prefs.setString(pkAppVersion, '$version.$buildNumber');
   });
-  runApp(const MyApp());
+  runApp( MultiBlocProvider(providers: [
+    BlocProvider<HttpBloc>(create: (_) => HttpBloc(HttpState(false, {})))
+  ],
+    child: const MyApp())
+  );
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key});
+  const MyApp({super.key});
 
   @override
   State<StatefulWidget> createState() => _MyApp();

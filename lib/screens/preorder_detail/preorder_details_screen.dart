@@ -1,9 +1,6 @@
 import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
 import 'package:cafe5_shop_mobile_client/models/model.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_bloc.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_event.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_state.dart';
-import 'package:cafe5_shop_mobile_client/screens/order/order_screen.dart';
+import 'package:cafe5_shop_mobile_client/screens/base/screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/preorder_detail/preorder_details_model.dart';
 import 'package:cafe5_shop_mobile_client/screens/preorders/preorders_model.dart';
 import 'package:cafe5_shop_mobile_client/screens/screen/app_scaffold.dart';
@@ -12,16 +9,16 @@ import 'package:cafe5_shop_mobile_client/utils/translator.dart';
 import 'package:cafe5_shop_mobile_client/utils/dialogs.dart';
 import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
 import 'package:cafe5_shop_mobile_client/widgets/loading.dart';
-import 'package:cafe5_shop_mobile_client/widgets/square_button.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class PreorderDetailsScreen extends StatelessWidget {
+class PreorderDetailsScreen extends MiuraApp {
   final Preorder preorder;
   final model = PreordersDetailsModel();
 
-  PreorderDetailsScreen({required this.preorder});
+  PreorderDetailsScreen({super.key, required this.preorder}) {
+    httpQuery(HttpEvent('hqpreorderdetails.php', {'id': preorder.id}));
+  }
 
   String total() {
     double total = 0;
@@ -40,41 +37,12 @@ class PreorderDetailsScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider<ScreenBloc>(
-        create: (_) => ScreenBloc(SSInit())
-          ..add(SEHttpQuery(
-              query: HttpQuery(hqPreorderDetails,
-                  initData: {'id': preorder.id}))),
-        child: AppScaffold(
-        headerWidgets: [
-          if (preorder.state == 1) ... [squareImageButton(() {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => OrderScreen(pricePolitic: 1, orderId: preorder.id))).then((value) {
-              if (value != null) {
-                BlocProvider.of<ScreenBloc>(context).add(SEHttpQuery(
-                    query: HttpQuery(hqPreorderDetails,
-                        initData: {'id': preorder.id})));
-              }
-            });
-          }, 'assets/images/edit.png', height: 40)]
-        ],
-        title: 'Preorder details',
-        child:  BlocListener<ScreenBloc, ScreenState>(listener:
-                (context, state) {
-              if (state is SSError) {
-                appDialog(context, state.error).then((value) {
-                  Navigator.pop(context);
-                });
-              }
-            }, child:
-                BlocBuilder<ScreenBloc, ScreenState>(builder: (context, state) {
-              if (state is SSInProgress) {
-                return Loading(tr('Loading...'));
-              } else if (state is SSData) {
-                for (var e in state.data[pkData]) {
-                  model.data.add(PreorderDetails.fromJson(e));
-                }
-              }
+  Widget body(BuildContext context) {
+    return
+                BlocBuilder<HttpBloc, HttpState>(builder: (context, state) {
+                  for (var e in state.data[pkData]) {
+                    model.data.add(PreorderDetails.fromJson(e));
+                  }
               return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: SingleChildScrollView(
@@ -165,6 +133,11 @@ class PreorderDetailsScreen extends StatelessWidget {
                       ],)
                     ],
                   )));
-            }))));
+            });
+  }
+
+  @override
+  String appTitle() {
+    return locale().preordersDetails;
   }
 }

@@ -1,27 +1,7 @@
-import 'dart:async';
 
-import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_event.dart';
-import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:intl/intl.dart';
+part of 'route_screen.dart';
 
-part 'route_model.freezed.dart';
 
-part 'route_model.g.dart';
-
-@freezed
-class RouteItem with _$RouteItem {
-  const factory RouteItem(
-      {required int partnerid,
-      required String partnername,
-      required String address,
-      required int orders,
-      required String action}) = _RouteItem;
-
-  factory RouteItem.fromJson(Map<String, Object?> json) =>
-      _$RouteItemFromJson(json);
-}
 
 class RouteModel {
   final List<RouteItem> route = [];
@@ -44,11 +24,12 @@ class RouteModel {
     date = date.add(const Duration(days: 1));
     dateStream.add(DateFormat('dd/MM/yyyy').format(date));
   }
+}
 
-  SEHttpQuery query(int driver) {
-    return SEHttpQuery(
-        query: HttpQuery(hqRoute, initData: {
-      pkDate: DateFormat('dd/MM/yyyy').format(date),
+extension RouteScreenExt on RouteScreen{
+  void refresh(int driver) {
+    httpQuery(HttpEvent('hqroute.php', {
+      pkDate: DateFormat('dd/MM/yyyy').format(model.date),
       pkDriver: driver
     }));
   }

@@ -25,7 +25,7 @@ class HttpState extends Equatable {
 
 class HttpEvent extends Equatable {
   final String route;
-  final Map<String, String> data;
+  final Map<String, dynamic> data;
   const HttpEvent(this.route, this.data);
   @override
   List<Object?> get props => [];
@@ -37,8 +37,9 @@ class HttpBloc extends Bloc<HttpEvent, HttpState> {
   }
 
   void _httpQuery(HttpEvent e) async {
-    emit (HttpState(true, ''));
-    HttpQuery(e.route, e.data).request();
+    emit(HttpState(true, ''));
+    final data = await HttpQuery(route: e.route, data: e.data).request();
+    emit(HttpState(false, data));
   }
 }
 
@@ -46,9 +47,7 @@ class HttpQuery {
   final String route;
   Map<String, dynamic> data = {};
 
-  HttpQuery({required this.route, Map<String, dynamic> initData = const {}}) {
-    data.addAll(initData);
-  }
+  HttpQuery({required this.route, Map<String, dynamic> initData = const {}, required Map<String, dynamic> data}) ;
 
   void makeJson(Map<String, Object?> other) {
     data[pkFcmToken] = prefs.getString(pkFcmToken);
@@ -60,42 +59,41 @@ class HttpQuery {
     return jsonEncode(data);
   }
 
-  Future<int> request(Map<String, Object?> other) async {
-    makeJson(other);
+  Future<Map<String,dynamic>> request() async {
     String strBody = await body();
-    other.clear();
     if (kDebugMode) {
       print(strBody);
     }
+    final result = <String,dynamic>{};
     try {
       var response = await http.post(
-          Uri.https(prefs.string(pkServerAddress), ),
+          Uri.https(prefs.string(pkServerAddress), route),
           headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': '${utf8.encode(strBody).length}'
+            'Content-Type': 'application/json'
           },
           body: utf8.encode(strBody)).timeout(const Duration(seconds: 10), onTimeout: (){return http.Response('Timeout', 408);});
       String s = utf8.decode(response.bodyBytes);
-      print(s);
+      if (kDebugMode) {
+        print('RESPONSE STRING FROM SERVER\r\n$s');
+      }
       if (response.statusCode < 299) {
-        other.addAll(jsonDecode(s));
-        if (other.containsKey('ok')) {
-          return int.tryParse(other['ok'].toString()) ?? 0;
+        result.addAll(jsonDecode(s));
+        if (result.containsKey('ok')) {
+          return result;
         } else {
-          other['ok'] = 0;
-          other['message'] = s;
-          return hrNetworkError;
+          result['ok'] = 0;
+          result['message'] = s;
+          return result;
         }
       } else {
-        other['ok'] = 0;
-        other['message'] = s;
-        return hrNetworkError;
+        result['ok'] = 0;
+        result['message'] = s;
+        return result;
       }
     } catch (e) {
-      other['ok'] = 0;
-      other['message'] = e.toString();
-      print(e.toString());
-      return hrNetworkError;
+      result['ok'] = 0;
+      result['message'] = e.toString();
+      return result;
     }
   }
 }

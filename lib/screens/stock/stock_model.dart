@@ -1,9 +1,4 @@
-import 'dart:async';
-
-import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
-import 'package:cafe5_shop_mobile_client/models/lists.dart';
-import 'package:cafe5_shop_mobile_client/utils/data_types.dart';
-import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
+part of 'stock_screen.dart';
 
 class StockModel {
   final StreamController filterController = StreamController();
@@ -18,11 +13,11 @@ class StockModel {
   String groupName() {
     return goodsGroup == 0 ? '' : Lists.goodsGroup[goodsGroup]!.name;
   }
+}
 
-  HttpQuery stockQuery() {
-    return HttpQuery(hqStock, initData: {
-      pkStock: store,
-      pkGroup : goodsGroup
-    });
+extension StockScreenExt on StockScreen {
+  void refresh() {
+    httpQuery(HttpEvent(
+        'hqstock.php', {pkStock: model.store, pkGroup: model.goodsGroup}));
   }
 }

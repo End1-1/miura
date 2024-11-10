@@ -1,4 +1,19 @@
 {
   "serverAddress": "Server address",
-  "save": "Save"
+  "save": "Save",
+  "close": "Close",
+  "salesHistory": "Sales history",
+  "dataDownload": "Downloading data",
+  "goodsList": "List of goods",
+  "home": "Home",
+  "signIn": "Sign in",
+  "order": "Order",
+  "partnerCart": "Partner cart",
+  "stock": "Stock",
+  "preordersDetails": "Preorders details",
+  "pendingPreorders": "Pending preorders",
+  "preorders": "Preorders",
+  "quantityOfPreorders": "Quantity of preorders",
+  "servers": "Servers",
+  "route": "Route"
 }

@@ -15,7 +15,7 @@ class ServerList extends MiuraApp {
   }
 
   @override
-  Widget body() {
+  Widget body(BuildContext context) {
     return  Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -55,5 +55,10 @@ class ServerList extends MiuraApp {
         rowSpace()
       ],
     );
+  }
+
+  @override
+  String appTitle() {
+    return locale().servers;
   }
 }

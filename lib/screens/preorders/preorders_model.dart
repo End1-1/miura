@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
-import 'package:cafe5_shop_mobile_client/models/lists.dart';
-import 'package:cafe5_shop_mobile_client/screens/bloc/screen_event.dart';
 import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:intl/intl.dart';
 
@@ -46,12 +45,11 @@ class PreordersModel {
     dateStream.add(DateFormat('dd/MM/yyyy').format(date));
   }
 
-  SEHttpQuery query(int driver) {
-    return SEHttpQuery(
-        query: HttpQuery(hqPreorders, initData: {
-          pkDate: DateFormat('dd/MM/yyyy').format(date),
-          pkDriver: driver,
-          'state': state
-        }));
+  void refresh(int driver) {
+    BlocProvider.of<HttpBloc>(prefs.context()).add(HttpEvent('hqpreorders.php', {
+    pkDate: DateFormat('dd/MM/yyyy').format(date),
+    pkDriver: driver,
+    'state': state
+    }));
   }
 }

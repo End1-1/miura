@@ -1,19 +1,23 @@
 import 'dart:async';
 
+import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
 import 'package:cafe5_shop_mobile_client/models/lists.dart';
 import 'package:cafe5_shop_mobile_client/models/model.dart';
+import 'package:cafe5_shop_mobile_client/screens/base/screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/screen/app_scaffold.dart';
 import 'package:cafe5_shop_mobile_client/utils/data_types.dart';
+import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
 import 'package:cafe5_shop_mobile_client/utils/translator.dart';
 import 'package:cafe5_shop_mobile_client/widgets/square_button.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import 'goods_list_model.dart';
+part 'goods_list_screen_part.dart';
 
-class GoodsListScreen extends StatelessWidget {
-  final model = GoodsListModel();
+class GoodsListScreen extends MiuraApp {
+  final Map<int, StockItem> stock = {};
+  final Map<int, StockItem> preorderStock = {};
   final carouselController = CarouselSliderController();
   final List<Goods> goods = [];
   final StreamController<String?> goodsGroupController = StreamController.broadcast();
@@ -31,13 +35,14 @@ class GoodsListScreen extends StatelessWidget {
       required this.pricePolitic,
       required double discount,
       required this.partnerId}) {
+    _init();
     goods.addAll(Lists.goods.values.map((e) {
       var special = false;
       double price = pricePolitic == mdPriceRetail ? e.price1 : e.price2;
       if (e.nospecialprice == 0) {
-        if (Lists.specialPrices.containsKey(this.partnerId)) {
-          if (Lists.specialPrices[this.partnerId]!.containsKey(e.id)) {
-            price = Lists.specialPrices[this.partnerId]![e.id]!;
+        if (Lists.specialPrices.containsKey(partnerId)) {
+          if (Lists.specialPrices[partnerId]!.containsKey(e.id)) {
+            price = Lists.specialPrices[partnerId]![e.id]!;
             special = true;
           }
         }
@@ -69,22 +74,8 @@ class GoodsListScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AppScaffold(
-        title: 'Goods list',
-        headerWidgets: [
-          smallSquareImageButton(() {
-            final List<Goods> list = [];
-            for (var e in goods) {
-              if ((e.qtysale ?? 0) > 0 || (e.qtyback ?? 0) > 0) {
-                list.add(e);
-              }
-            }
-            Navigator.pop(context, list);
-          }, 'assets/images/done.png')
-        ],
-        onBackTap: _onBackTap,
-        child: Column(
+  Widget body(BuildContext context) {
+    return  Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: CarouselSlider(
@@ -118,7 +109,7 @@ class GoodsListScreen extends StatelessWidget {
                                         for (var e in snapshot.data ?? []) ...[
                                           _GoodsRow(
                                               goods: e,
-                                              model: model,
+                                              goodsQty: mdFormatDouble(stockQty(e.id)),
                                               partnerid: partnerId,
                                               inputDataChanged: inputDataChanged)
                                         ]
@@ -168,24 +159,44 @@ class GoodsListScreen extends StatelessWidget {
                       ));
                 })
           ],
-        ));
+        );
   }
 
-  _onBackTap(BuildContext context) {
-      if (currentPage == 0) {
+  @override
+  Function(BuildContext) onBackTap() {
+      return (context){ if (currentPage == 0) {
         Navigator.pop(context);
       } else {
         carouselController.jumpToPage(0);
         currentPage = 0;
-      }
+      }};
+  }
+
+  @override
+  String appTitle() {
+    return locale().goodsList;
+  }
+
+  @override
+  List<Widget> headerWidgets() {
+    return  [
+    smallSquareImageButton(() {
+    final List<Goods> list = [];
+    for (var e in goods) {
+    if ((e.qtysale ?? 0) > 0 || (e.qtyback ?? 0) > 0) {
+    list.add(e);
+    }
+    }
+    Navigator.pop(prefs.context(), list);
+    }, 'assets/images/done.png')];
   }
 
 }
 
 class _GoodsRow extends StatelessWidget {
-  final GoodsListModel model;
   late Goods goods;
   final int partnerid;
+  final String goodsQty;
   final TextEditingController editSale = TextEditingController();
   final TextEditingController editBack = TextEditingController();
   final TextEditingController editPrice = TextEditingController();
@@ -194,7 +205,7 @@ class _GoodsRow extends StatelessWidget {
 
   _GoodsRow(
       {required this.goods,
-      required this.model,
+        required this.goodsQty,
         required this.partnerid,
       required this.inputDataChanged});
 
@@ -202,7 +213,7 @@ class _GoodsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     editSale.text = mdFormatDouble(goods.qtysale);
     editBack.text = mdFormatDouble(goods.qtyback);
-    editStock.text = mdFormatDouble(model.stockQty(goods.id));
+    editStock.text = goodsQty;
     editPrice.text = mdFormatDouble(goods.price);
     bool ws = false;
     if (Lists.partnersGoods.containsKey(partnerid))

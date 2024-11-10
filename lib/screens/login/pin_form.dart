@@ -7,13 +7,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../utils/translator.dart';
 
-class PinForm extends MiuraApp {
-  static final TextEditingController _pinController = TextEditingController();
+class PinForm extends StatelessWidget {
+  final TextEditingController _pinController = TextEditingController();
 
-  const PinForm({super.key});
+  PinForm({super.key});
 
   @override
-  Widget body(BuildContext context) {
+  Widget build(BuildContext context) {
     return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,

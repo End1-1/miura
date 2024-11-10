@@ -1,12 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
-import 'package:cafe5_shop_mobile_client/models/lists.dart';
-import 'package:cafe5_shop_mobile_client/utils/data_types.dart';
-import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:intl/intl.dart';
+part of 'order_screen.dart';
 
 class OrderModel {
   final StreamController<Partner> partnerController = StreamController();
@@ -35,6 +27,35 @@ class OrderModel {
     storage = Lists.config.storage;
   }
 
+  void openOrder() async {
+    final data = await HttpQuery(route: 'hqopenorder.php', data: {'id': orderId}).request();
+    partner = Partner.fromJson(data['partner']);
+    pricePolitic = partner.pricepolitic;
+    paymentType = data['order']['paymenttype'];
+    editComment.text = data['order']['comment'];
+    for (var e in data['goods']) {
+      goods.add(Goods.fromJson(e));
+    }
+    if (goods.isNotEmpty) {
+      storage = goods.first.storage!;
+    }
+    partnerController.add(partner);
+    goodsController.add(goods);
+    inputDataChanged(null, -1);
+    checkDelivery();
+  }
+
+  Future<void> checkDelivery() async {
+    final data = await HttpQuery(route: 'hqroute.php', data: {
+      pkDate: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+      pkDriver: prefs.getInt(pkDriver),
+      pkPartner: partner.id,
+    }).request();
+    if (data['ok'] == hrOk) {
+      completeDeliveryScreen.add(data['data']);
+    }
+  }
+
   void inputDataChanged(Goods? g, int index) {
     if (index > -1) {
       goods[index] = g!;
@@ -60,9 +81,8 @@ class OrderModel {
       goodsController.add(goods);
       inputDataChanged(null, -1);
     } else {
-      Map<String, Object?> data = {'dbuuid': g.dbuuid};
-      HttpQuery(hqRemoveOrderRow).request(data).then((value) {
-        if (value == hrOk) {
+      HttpQuery(route:'hqremoveorderrow.php', data:{}).request().then((value) {
+        if (value['ok'] == hrOk) {
           goods.remove(g);
           goodsController.add(goods);
           inputDataChanged(null, -1);
