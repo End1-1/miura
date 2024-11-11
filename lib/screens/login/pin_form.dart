@@ -97,7 +97,7 @@ class PinForm extends StatelessWidget {
                               //         builder: (context) => RegisterDeviceScreen()));
                             }
                             BlocProvider.of<HttpBloc>(context).add(
-                                HttpEvent('miura/login.php', {'pin': _pinController.text}));
+                                HttpEvent('login.php', {'pin': _pinController.text, 'method':2}));
                           }, 'assets/images/user.png', height: 72),
                           squareButton(() {
                             _pinController.text += '0';

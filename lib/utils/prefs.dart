@@ -51,6 +51,7 @@ const hqSales = 19;
 const prStorage = 14;
 
 extension Prefs on SharedPreferences {
+  static bool isInitialized = false;
   static final navigatorKey = GlobalKey<NavigatorState>();
   String string(String key) {
     return getString(key) ?? '';

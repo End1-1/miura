@@ -215,31 +215,21 @@ class _GoodsRow extends StatelessWidget {
     editBack.text = mdFormatDouble(goods.qtyback);
     editStock.text = goodsQty;
     editPrice.text = mdFormatDouble(goods.price);
-    bool ws = false;
-    if (Lists.partnersGoods.containsKey(partnerid))
-      if (Lists.partnersGoods[partnerid]!.contains(goods.id))
-        ws = true;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (ws)
-                Container(
-                  height: 10,
-                  width: 10,
-                  decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(30)),
-                  color: Colors.indigo
-                ),),
+
             Container(
                 padding: const EdgeInsets.fromLTRB(5, 2, 5, 2),
                 height: 55,
                 decoration: const BoxDecoration(
                   color: Color(0xffbcbcec),
                 ),
-                width: MediaQuery.of(context).size.width * 0.7 - (ws ? 10 : 0),
+                width: MediaQuery.of(context).size.width * 0.7 ,
                 child: Text(goods.goodsname,
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
             //Quantity sale

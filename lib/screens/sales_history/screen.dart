@@ -13,20 +13,16 @@ part 'screen.part.dart';
 class SalesHistoryScreen extends MiuraApp {
   DateTime date1 = DateTime.now();
   DateTime date2 = DateTime.now();
-  final dateStream =  StreamController();
+  final dateStream = StreamController();
   int viewType = 1;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final GlobalKey<ScaffoldState> _blocKey = GlobalKey<ScaffoldState>();
 
   SalesHistoryScreen({super.key}) {
     _refresh();
   }
 
   @override
-Widget body(BuildContext context) {
-  return    Column(children: [
-
-                ]);
+  Widget body(BuildContext context) {
+    return Column(children: []);
   }
 
   @override
@@ -88,7 +84,9 @@ Widget body(BuildContext context) {
             ),
             Row(
               children: [
-                Expanded(child: Container(),),
+                Expanded(
+                  child: Container(),
+                ),
                 squareImageButton(() {
                   Navigator.pop(context, true);
                 }, 'assets/images/done.png'),
@@ -98,11 +96,13 @@ Widget body(BuildContext context) {
                 squareImageButton(() {
                   Navigator.pop(context);
                 }, 'assets/images/cancel.png'),
-                Expanded(child: Container(),),
+                Expanded(
+                  child: Container(),
+                ),
               ],
             ),
           ]);
         });
-      return result ?? false;
+    return result ?? false;
   }
 }

@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
 
+Widget button(VoidCallback onPressed, String text) {
+  return Container(padding: const EdgeInsets.all(3), height: 52, width: 172, child: OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.all(2),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      )));
+}
+
 Widget squareButton(VoidCallback onPressed, String text) {
   return Container(padding: const EdgeInsets.all(3), height: 72, width: 72, child: OutlinedButton(
       onPressed: onPressed,

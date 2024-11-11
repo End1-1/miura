@@ -12,25 +12,29 @@ class LoginScreen extends MiuraApp {
 
   @override
   Widget body(BuildContext context) {
-    return  BlocListener<HttpBloc, HttpState>(
-              listener: (context, state) {
-
-                if (state.errorCode == 200) {
-                  prefs.setInt(pkDriver, state.data[pkDriver]);
-                  prefs.setString(pkLastName, state.data[pkLastName]);
-                  prefs.setString(pkFirstName, state.data[pkFirstName]);
-                  prefs.setString(pkPassHash, state.data[pkPassHash]);
-                    if (prefs.getBool(pkDataLoaded) ?? false) {
-                      Navigator.pushAndRemoveUntil(prefs.context(), MaterialPageRoute(builder: (context) => HomeScreen()), (route) => false);
-                    } else {
-                      Navigator.pushAndRemoveUntil(prefs.context(), MaterialPageRoute(
-                          builder: (context) => DataDownloadScreen(pop: false)), (
-                          route) => false);
-                    }
-                }
-              },
-              child: PinForm(),
-            );
+    return BlocListener<HttpBloc, HttpState>(
+      listener: (context, state) {
+        if (state.errorCode == hrOk) {
+          prefs.setInt(pkDriver, state.data['data']['user']['f_id']);
+          prefs.setString(pkLastName, state.data['data']['user']['f_last']);
+          prefs.setString(pkFirstName, state.data['data']['user']['f_first']);
+          prefs.setString('sessionkey', state.data['data']['sessionkey']);
+          if (prefs.getBool(pkDataLoaded) ?? false) {
+            Navigator.pushAndRemoveUntil(
+                prefs.context(),
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+                (route) => false);
+          } else {
+            Navigator.pushAndRemoveUntil(
+                prefs.context(),
+                MaterialPageRoute(
+                    builder: (context) => DataDownloadScreen(pop: false)),
+                (route) => false);
+          }
+        }
+      },
+      child: PinForm(),
+    );
   }
 
   @override

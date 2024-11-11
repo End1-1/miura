@@ -11,9 +11,9 @@ String mdFormatDouble(double? value) {
 
 String saleTypeName(int politic) {
   switch (politic) {
-    case 1:
+    case mdPriceRetail:
       return tr('Retail sale');
-    case 2:
+    case mdPriceWhosale:
       return tr('Whosale sale');
     default:
       return tr('Unknown sale');

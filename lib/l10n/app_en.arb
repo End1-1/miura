@@ -15,5 +15,7 @@
   "preorders": "Preorders",
   "quantityOfPreorders": "Quantity of preorders",
   "servers": "Servers",
-  "route": "Route"
+  "route": "Route",
+  "accessDenied": "Access denied",
+  "retry": "Retry"
 }

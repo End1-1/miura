@@ -177,10 +177,6 @@ extension popup on OrderScreen {
                 case hrOk:
                   Navigator.of(prefs.context()).pop();
                   break;
-                case hrNetworkError:
-                  appDialog(prefs.context(),
-                      requiestMap['message'].toString());
-                  return;
               }
             }, null);
           }),

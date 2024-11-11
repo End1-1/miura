@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:cafe5_shop_mobile_client/local_notification_service.dart';
 import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
+import 'package:cafe5_shop_mobile_client/screens/login/login_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/register_device/server_list.dart';
 import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
 import 'package:flutter/material.dart';
@@ -16,17 +15,8 @@ Future<void> main() async {
   Intl.defaultLocale = 'en_US';
   WidgetsFlutterBinding.ensureInitialized();
   initializeDateFormatting('en_US', null);
-  prefs = await SharedPreferences.getInstance();
-  await LocalNotificationService().setup();
-  PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
-    String appName = packageInfo.appName;
-    String packageName = packageInfo.packageName;
-    String version = packageInfo.version;
-    String buildNumber = packageInfo.buildNumber;
-    prefs.setString(pkAppVersion, '$version.$buildNumber');
-  });
   runApp( MultiBlocProvider(providers: [
-    BlocProvider<HttpBloc>(create: (_) => HttpBloc(HttpState(false, {})))
+    BlocProvider<HttpBloc>(create: (_) => HttpBloc(HttpState( {})))
   ],
     child: const MyApp())
   );
@@ -79,10 +69,23 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
           }));
   }
   Future<Object?> _initApp() async {
-    await Future.delayed(const Duration(seconds: 3));
+    if (!Prefs.isInitialized) {
+      prefs = await SharedPreferences.getInstance();
+      Prefs.isInitialized = true;
+    }
+    await LocalNotificationService().setup();
+    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+      String appName = packageInfo.appName;
+      prefs.setString('appname', appName);
+      //String packageName = packageInfo.packageName;
+      String version = packageInfo.version;
+      String buildNumber = packageInfo.buildNumber;
+      prefs.setString(pkAppVersion, '$version.$buildNumber');
+    });
     if (prefs.string(pkServerAddress).isEmpty) {
       return true;
     }
+    return true;
   }
 
   Widget _logo() {
@@ -97,6 +100,6 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
     if (prefs.string(pkServerAddress).isEmpty) {
       return ServerList();
     }
-    return Container();
+    return LoginScreen();
   }
 }
