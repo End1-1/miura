@@ -1,0 +1,2 @@
+C:/projects/miura/android/app/.cxx/Debug/1d3k3f6h/x86/CMakeFiles/edit_cache.dir
+C:/projects/miura/android/app/.cxx/Debug/1d3k3f6h/x86/CMakeFiles/rebuild_cache.dir

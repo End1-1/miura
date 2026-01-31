@@ -19,11 +19,18 @@ class PinForm extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           //Expanded(child: Container()),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [Image.asset('assets/logo.png',height: 100)]),
+          const SizedBox(height: 10),
           Align(
               child: SizedBox(
                   width: 72 * 3,
                   child: TextFormField(
-                    decoration: InputDecoration(hintText: tr("Enter pin code")),
+                    decoration: InputDecoration(hintText: tr("Enter pin code"),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder()),
                     obscureText: true,
                     controller: _pinController,
                     textAlign: TextAlign.center,

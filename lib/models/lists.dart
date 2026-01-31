@@ -13,40 +13,45 @@ class Lists {
   static Map<int, Driver> drivers = {};
   static late Config config;
 
-  static Future<void> load() async {
-    goods.clear();
-    goodsGroup.clear();
-    partners.clear();
+  static Future<String> load() async {
+    try {
+      goods.clear();
+      goodsGroup.clear();
+      partners.clear();
 
-    Hive.init((await path_provider.getApplicationDocumentsDirectory()).path);
-    final box = await Hive.openBox('data');
-    String s = box.get('data', defaultValue: '{}');
+      Hive.init((await path_provider.getApplicationDocumentsDirectory()).path);
+      final box = await Hive.openBox('data');
+      String s = box.get('data', defaultValue: '{}');
 
-    Map<String, dynamic> data = jsonDecode(s);
-    data = data['data'];
-    for (var e in data['goods']) {
-      goods[e['id']] = Goods.fromJson(e);
-    }
-    for (var e in data['goodsgroup']) {
-      goodsGroup[e['id']] = GoodsGroup.fromJson(e);
-    }
-    for (var e in data['partners']) {
-      partners[e['id']] = Partner.fromJson(e);
-    }
-    for (var e in data['specialprices']) {
-      GoodsSpecialPrice gsp = GoodsSpecialPrice.fromJson(e);
-      if (!specialPrices.containsKey(gsp.partner)) {
-        specialPrices[gsp.partner] = {};
+      Map<String, dynamic> data = jsonDecode(s);
+      data = data['data'];
+      for (var e in data['goods']) {
+        goods[e['id']] = Goods.fromJson(e);
       }
-      specialPrices[gsp.partner]![gsp.goods] = gsp.price;
+      for (var e in data['goodsgroup']) {
+        goodsGroup[e['id']] = GoodsGroup.fromJson(e);
+      }
+      for (var e in data['partners']) {
+        partners[e['id']] = Partner.fromJson(e);
+      }
+      for (var e in data['specialprices']) {
+        GoodsSpecialPrice gsp = GoodsSpecialPrice.fromJson(e);
+        if (!specialPrices.containsKey(gsp.partner)) {
+          specialPrices[gsp.partner] = {};
+        }
+        specialPrices[gsp.partner]![gsp.goods] = gsp.price;
+      }
+      for (var e in data['storages']) {
+        storages[e['id']] = Storage.fromJson(e);
+      }
+      for (var e in data['drivers']) {
+        drivers[e['id']] = Driver.fromJson(e);
+      }
+      config = Config.fromJson(data['config'] ?? '{}');
+    } catch (e) {
+      return e.toString();
     }
-    for (var e in data['storages']) {
-      storages[e['id']] = Storage.fromJson(e);
-    }
-    for (var e in data['drivers']) {
-      drivers[e['id']] = Driver.fromJson(e);
-    }
-    config = Config.fromJson(data['config']);
+    return '';
   }
 
   static List<Partner> filteredPartners(String filter) {

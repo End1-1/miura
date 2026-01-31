@@ -17,5 +17,6 @@
   "servers": "Servers",
   "route": "Route",
   "accessDenied": "Access denied",
-  "retry": "Retry"
+  "retry": "Retry",
+  "back": "Back"
 }

@@ -1,5 +1,6 @@
 import 'package:cafe5_shop_mobile_client/local_notification_service.dart';
 import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
+import 'package:cafe5_shop_mobile_client/models/lists.dart';
 import 'package:cafe5_shop_mobile_client/screens/login/login_screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/register_device/server_list.dart';
 import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
@@ -82,6 +83,18 @@ class _MyApp extends State<MyApp> with WidgetsBindingObserver{
       String buildNumber = packageInfo.buildNumber;
       prefs.setString(pkAppVersion, '$version.$buildNumber');
     });
+    if ((prefs.getString('sessionkey') ?? '').isNotEmpty) {
+      final result = await HttpQuery(route: 'login.php', data: {'method':3}).request();
+      if (result['status'] != 1) {
+        return Future.error(result['data']);
+      }
+      final err = await Lists.load();
+      if (err.isNotEmpty) {
+        return Future.error(err);
+      }
+      print(result);
+    }
+
     if (prefs.string(pkServerAddress).isEmpty) {
       return true;
     }

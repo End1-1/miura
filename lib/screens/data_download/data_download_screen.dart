@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:cafe5_shop_mobile_client/models/http_query/http_query.dart';
 import 'package:cafe5_shop_mobile_client/models/lists.dart';
 import 'package:cafe5_shop_mobile_client/screens/base/screen.dart';
 import 'package:cafe5_shop_mobile_client/screens/home/home_screen.dart';
+import 'package:cafe5_shop_mobile_client/screens/login/login_screen.dart';
 import 'package:cafe5_shop_mobile_client/utils/prefs.dart';
 import 'package:cafe5_shop_mobile_client/widgets/square_button.dart';
 import 'package:flutter/material.dart';
@@ -27,9 +26,14 @@ class DataDownloadScreen extends MiuraApp {
         Hive.init((await path_provider.getApplicationDocumentsDirectory()).path);
         final box = await Hive.openBox('data');
         box.put('data', s);
-        await Lists.load();
-        prefs.setBool(pkDataLoaded, true);
-        if (pop) {
+        var err = await Lists.load();
+        if (err.isNotEmpty) {
+          BlocProvider.of<HttpBloc>(context).emit(HttpState('', errorCode: hrFail, errorMessage: err));
+          return;
+        } else {
+          prefs.setBool(pkDataLoaded, true);
+        }
+        if (pop ) {
           Navigator.pop(prefs.context());
         } else {
           Navigator.pushAndRemoveUntil(
@@ -46,7 +50,14 @@ class DataDownloadScreen extends MiuraApp {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-                children: [button(() {
+                children: [
+                  button((){
+                    Navigator.pushAndRemoveUntil(
+                        prefs.context(),
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                            (route) => false);
+                  }, locale().back), const SizedBox(width: 10),
+                  button(() {
               httpQuery(HttpEvent('hqdownloaddata.php', {}));
             }, locale().retry)])
 

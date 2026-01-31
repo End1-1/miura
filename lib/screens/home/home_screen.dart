@@ -113,6 +113,7 @@ class HomeScreen extends MiuraApp {
                     onTap: () {
                       appDialogQuestion(context, tr('Confirm to logout'), () {
                         prefs.setBool(pkDataLoaded, false);
+                        prefs.setString('sessionkey', '');
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(

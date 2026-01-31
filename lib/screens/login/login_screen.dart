@@ -8,7 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LoginScreen extends MiuraApp {
-  const LoginScreen({super.key});
+  LoginScreen({super.key}) {
+    if ((prefs.getString('sessionkey') ?? '').isNotEmpty) {
+      BlocProvider.of<HttpBloc>(prefs.context()).add(
+          HttpEvent('login.php', {'method':3}));
+    }
+  }
 
   @override
   Widget body(BuildContext context) {

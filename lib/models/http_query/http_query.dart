@@ -67,6 +67,7 @@ class HttpQuery {
   Future<Map<String, dynamic>> request() async {
     data[pkFcmToken] = prefs.getString(pkFcmToken);
     data['sessionkey'] = prefs.getString('sessionkey');
+    data['app'] = 'miura';
     String strBody = jsonEncode(data);
     if (kDebugMode) {
       print('REQUEST');

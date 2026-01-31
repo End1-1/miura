@@ -19,7 +19,7 @@ abstract class MiuraApp extends StatelessWidget {
             backgroundColor: appBgColor,
             appBar: appBar(),
             body: SafeArea(
-                minimum: const EdgeInsets.fromLTRB(5, 35, 5, 5),
+                minimum: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                 child: Stack(
                     children: [body(context), _loading(), _errorWidget()]))));
   }
@@ -95,10 +95,12 @@ abstract class MiuraApp extends StatelessWidget {
   PreferredSizeWidget appBar() {
     return PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Row(children: [
+        child: Container(
+            padding: EdgeInsets.only(top: MediaQuery.of(prefs.context()).padding.top),
+            child:  Row(children: [
           showBackButton()
-              ? Expanded(
-                  child: Row(
+              ?
+                  Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -115,14 +117,14 @@ abstract class MiuraApp extends StatelessWidget {
                               width: 30,
                               child: Image.asset('assets/images/back.png'))),
                       const SizedBox(width: 10)
-                    ]))
+                    ])
               : Container(),
           Expanded(
               child: Text(appTitle(),
                   overflow: TextOverflow.clip,
                   style: const TextStyle(
                       color: Colors.blueAccent, fontWeight: FontWeight.bold)))
-        ]));
+        ])));
   }
 
   String appTitle();

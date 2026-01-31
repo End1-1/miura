@@ -42,7 +42,9 @@ class OrderScreen extends MiuraApp {
   @override
   Widget body(BuildContext context) {
     return  Column(
-        crossAxisAlignment: CrossAxisAlignment.start, children: [
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
       StreamBuilder<Partner>(
           stream: model.partnerController.stream,
           builder: (context, snapshot) {

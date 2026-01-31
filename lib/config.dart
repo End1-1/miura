@@ -25,8 +25,7 @@ class Config {
   static late Config _config;
   late SharedPreferences _preferences;
 
-  Config() {
-  }
+  Config() ;
 
   static Future<void> init() async {
     _config = Config();
